@@ -1,49 +1,60 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php'; // Include the PHPMailer autoloader
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Retrieve form data
     $name = $_POST["inputName"];
     $email = $_POST["inputEmail"];
     $message = $_POST["inputMessage"];
 
-    // Validate data (you may want to add more validation)
     if (empty($name) || empty($email) || empty($message)) {
         echo "Please fill in all required fields.";
         exit;
     }
 
-    // Email recipient
     $to = "hemantaphuyal@gmail.com"; // Update this email address
-
-    // Subject of the email
     $subject = "New Form Submission";
 
-    // Email headers
-    $headers = "From: $email\r\n";
-    $headers .= "Reply-To: $email\r\n";
-    $headers .= "MIME-Version: 1.0\r\n";
-    $headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+    $mail = new PHPMailer(true);
 
-    // Compose the email message
-    $email_message = "
-        <html>
-        <head>
-            <title>New Form Submission</title>
-        </head>
-        <body>
-            <p><strong>Name:</strong> $name</p>
-            <p><strong>Email:</strong> $email</p>
-            <p><strong>Message:</strong> $message</p>
-        </body>
-        </html>
-    ";
+    try {
+        //Server settings
+        $mail->isSMTP();
+        $mail->Host = 'smtp.yourmailserver.com'; // Update this with your SMTP server
+        $mail->SMTPAuth = true;
+        $mail->Username = 'your_username';
+        $mail->Password = 'your_password';
+        $mail->SMTPSecure = 'tls';
+        $mail->Port = 587;
 
-    // Send the email
-    mail($to, $subject, $email_message, $headers);
+        //Recipients
+        $mail->setFrom($email, $name);
+        $mail->addAddress($to);
 
-    // Redirect after submission (you can customize the URL)
-    header("Location: thank_you_page.php");
-    exit;
+        //Content
+        $mail->isHTML(true);
+        $mail->Subject = $subject;
+        $mail->Body = "
+            <html>
+            <head>
+                <title>New Form Submission</title>
+            </head>
+            <body>
+                <p><strong>Name:</strong> $name</p>
+                <p><strong>Email:</strong> $email</p>
+                <p><strong>Message:</strong> $message</p>
+            </body>
+            </html>
+        ";
+
+        $mail->send();
+
+        header("Location: thank_you_page.php");
+        exit;
+    } catch (Exception $e) {
+        echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+    }
 }
-
 ?>
