@@ -1,43 +1,49 @@
 <?php
 
-// Check if the form has been submitted
-if (isset($_POST['submit'])) {
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Retrieve form data
+    $name = $_POST["inputName"];
+    $email = $_POST["inputEmail"];
+    $message = $_POST["inputMessage"];
 
-    // Get the form data
-    $name = $_POST['inputName'];
-    $email = $_POST['inputEmail'];
-    $message = $_POST['inputMessage'];
-
-    // Validate the form data
+    // Validate data (you may want to add more validation)
     if (empty($name) || empty($email) || empty($message)) {
-        // Display an error message
-        echo 'All fields are required.';
+        echo "Please fill in all required fields.";
         exit;
     }
 
-    // Validate the email address
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        // Display an error message
-        echo 'Please enter a valid email address.';
-        exit;
-    }
+    // Email recipient
+    $to = "hemantaphuyal@gmail.com"; // Update this email address
 
-    // Send the email notification
-    $to = 'hemantaphy@gmail.com';
-    $subject = 'Contact form submission';
-    $body = "
-Name: $name
-Email: $email
-Message: $message
-";
-    $headers = "From: $email";
+    // Subject of the email
+    $subject = "New Form Submission";
 
-    if (mail($to, $subject, $body, $headers)) {
-        // Display a success message
-        echo 'Your message has been sent successfully.';
-    } else {
-        // Display an error message
-        echo 'There was an error sending your message. Please try again later.';
-    }
+    // Email headers
+    $headers = "From: $email\r\n";
+    $headers .= "Reply-To: $email\r\n";
+    $headers .= "MIME-Version: 1.0\r\n";
+    $headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+
+    // Compose the email message
+    $email_message = "
+        <html>
+        <head>
+            <title>New Form Submission</title>
+        </head>
+        <body>
+            <p><strong>Name:</strong> $name</p>
+            <p><strong>Email:</strong> $email</p>
+            <p><strong>Message:</strong> $message</p>
+        </body>
+        </html>
+    ";
+
+    // Send the email
+    mail($to, $subject, $email_message, $headers);
+
+    // Redirect after submission (you can customize the URL)
+    header("Location: thank_you_page.php");
+    exit;
 }
 
+?>
